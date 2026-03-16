@@ -59,7 +59,7 @@ function DetailScreen() {
               </div>
 
               <p className="mb-0">
-                <strong>Expert:</strong> {selected_service.name_of_the_expert}
+                <strong>Detail Specialist:</strong> {selected_service.name_of_the_expert}
               </p>
             </Card.Body>
           </Card>
