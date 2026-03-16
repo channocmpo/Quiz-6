@@ -1,7 +1,58 @@
-import { Button, Card, Col, Container, Form, Row } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { Alert, Button, Card, Col, Container, Form, Row } from 'react-bootstrap';
+import { Link, useNavigate } from 'react-router-dom';
+import { create_user } from '../utils/userStorage';
 
 function SignUp() {
+  const navigate = useNavigate();
+  const [form_data, set_form_data] = useState({
+    email: '',
+    username: '',
+    phone_number: '',
+    first_name: '',
+    last_name: '',
+    location: '',
+    gender: '',
+    password: '',
+    confirm_password: ''
+  });
+  const [feedback_message, set_feedback_message] = useState('');
+
+  const handle_change = (event) => {
+    const { name, value } = event.target;
+    set_form_data((previous_data) => ({
+      ...previous_data,
+      [name]: value
+    }));
+  };
+
+  const handle_submit = (event) => {
+    event.preventDefault();
+
+    if (form_data.password !== form_data.confirm_password) {
+      set_feedback_message('Password and confirm password must match.');
+      return;
+    }
+
+    const register_result = create_user({
+      email: form_data.email,
+      username: form_data.username,
+      phone_number: form_data.phone_number,
+      first_name: form_data.first_name,
+      last_name: form_data.last_name,
+      location: form_data.location,
+      gender: form_data.gender,
+      password: form_data.password
+    });
+
+    if (!register_result.success) {
+      set_feedback_message(register_result.message);
+      return;
+    }
+
+    navigate('/signin');
+  };
+
   return (
     <Container className="py-5">
       <Row className="justify-content-center">
@@ -11,18 +62,38 @@ function SignUp() {
               <h1 className="h4 mb-3">Create Account</h1>
               <p className="text-muted mb-4">Register with the required details below.</p>
 
-              <Form>
+              {feedback_message && (
+                <Alert variant="danger" className="mb-3">
+                  {feedback_message}
+                </Alert>
+              )}
+
+              <Form onSubmit={handle_submit}>
                 <Row>
                   <Col md={6}>
                     <Form.Group className="mb-3" controlId="email">
                       <Form.Label>Email</Form.Label>
-                      <Form.Control type="email" placeholder="Enter email" required />
+                      <Form.Control
+                        type="email"
+                        name="email"
+                        placeholder="Enter email"
+                        value={form_data.email}
+                        onChange={handle_change}
+                        required
+                      />
                     </Form.Group>
                   </Col>
                   <Col md={6}>
                     <Form.Group className="mb-3" controlId="username">
                       <Form.Label>Username</Form.Label>
-                      <Form.Control type="text" placeholder="Enter username" required />
+                      <Form.Control
+                        type="text"
+                        name="username"
+                        placeholder="Enter username"
+                        value={form_data.username}
+                        onChange={handle_change}
+                        required
+                      />
                     </Form.Group>
                   </Col>
                 </Row>
@@ -33,7 +104,10 @@ function SignUp() {
                       <Form.Label>Phone Number</Form.Label>
                       <Form.Control
                         type="tel"
+                        name="phone_number"
                         placeholder="Enter phone number"
+                        value={form_data.phone_number}
+                        onChange={handle_change}
                         required
                       />
                     </Form.Group>
@@ -41,7 +115,14 @@ function SignUp() {
                   <Col md={6}>
                     <Form.Group className="mb-3" controlId="location">
                       <Form.Label>Location</Form.Label>
-                      <Form.Control type="text" placeholder="Enter location" required />
+                      <Form.Control
+                        type="text"
+                        name="location"
+                        placeholder="Enter location"
+                        value={form_data.location}
+                        onChange={handle_change}
+                        required
+                      />
                     </Form.Group>
                   </Col>
                 </Row>
@@ -50,13 +131,27 @@ function SignUp() {
                   <Col md={6}>
                     <Form.Group className="mb-3" controlId="first_name">
                       <Form.Label>First Name</Form.Label>
-                      <Form.Control type="text" placeholder="Enter first name" required />
+                      <Form.Control
+                        type="text"
+                        name="first_name"
+                        placeholder="Enter first name"
+                        value={form_data.first_name}
+                        onChange={handle_change}
+                        required
+                      />
                     </Form.Group>
                   </Col>
                   <Col md={6}>
                     <Form.Group className="mb-3" controlId="last_name">
                       <Form.Label>Last Name</Form.Label>
-                      <Form.Control type="text" placeholder="Enter last name" required />
+                      <Form.Control
+                        type="text"
+                        name="last_name"
+                        placeholder="Enter last name"
+                        value={form_data.last_name}
+                        onChange={handle_change}
+                        required
+                      />
                     </Form.Group>
                   </Col>
                 </Row>
@@ -65,7 +160,12 @@ function SignUp() {
                   <Col md={6}>
                     <Form.Group className="mb-3" controlId="gender">
                       <Form.Label>Gender</Form.Label>
-                      <Form.Select required defaultValue="">
+                      <Form.Select
+                        required
+                        name="gender"
+                        value={form_data.gender}
+                        onChange={handle_change}
+                      >
                         <option value="" disabled>
                           Select gender
                         </option>
@@ -81,7 +181,10 @@ function SignUp() {
                       <Form.Label>Password</Form.Label>
                       <Form.Control
                         type="password"
+                        name="password"
                         placeholder="Enter password"
+                        value={form_data.password}
+                        onChange={handle_change}
                         required
                       />
                     </Form.Group>
@@ -94,7 +197,10 @@ function SignUp() {
                       <Form.Label>Confirm Password</Form.Label>
                       <Form.Control
                         type="password"
+                        name="confirm_password"
                         placeholder="Confirm password"
+                        value={form_data.confirm_password}
+                        onChange={handle_change}
                         required
                       />
                     </Form.Group>

@@ -1,8 +1,12 @@
 import { Badge, Card, Col, Container, Row } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import services_data from '../data/servicesData';
+import { get_current_user } from '../utils/userStorage';
 
 function HomeScreen() {
+  const current_user = get_current_user();
+  const is_admin = current_user && current_user.role === 'Admin';
+
   return (
     <Container className="py-5">
       <Row className="mb-4">
@@ -23,6 +27,14 @@ function HomeScreen() {
             <Link to="/signup" className="btn btn-outline-primary btn-sm">
               Sign Up
             </Link>
+            <Link to="/apply-seller" className="btn btn-outline-secondary btn-sm">
+              Apply Seller
+            </Link>
+            {is_admin && (
+              <Link to="/users" className="btn btn-dark btn-sm">
+                Users
+              </Link>
+            )}
           </div>
         </Col>
       </Row>
