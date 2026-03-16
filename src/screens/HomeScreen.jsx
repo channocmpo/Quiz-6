@@ -6,11 +6,24 @@ function HomeScreen() {
   return (
     <Container className="py-5">
       <Row className="mb-4">
-        <Col>
+        <Col md={8}>
           <h1 className="h3 mb-1">Available Expert Services</h1>
           <p className="text-muted mb-0">
             Browse useful services from trusted experts.
           </p>
+        </Col>
+        <Col
+          md={4}
+          className="d-flex align-items-start justify-content-md-end mt-3 mt-md-0"
+        >
+          <div className="d-flex gap-2">
+            <Link to="/signin" className="btn btn-primary btn-sm">
+              Sign In
+            </Link>
+            <Link to="/signup" className="btn btn-outline-primary btn-sm">
+              Sign Up
+            </Link>
+          </div>
         </Col>
       </Row>
 
