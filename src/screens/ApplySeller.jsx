@@ -1,36 +1,31 @@
 import { useState } from 'react';
 import { Alert, Button, Card, Col, Container, Form, Row } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { create_seller_application, get_current_user } from '../utils/userStorage';
+import { api_request } from '../utils/apiClient';
 
 function ApplySeller() {
-  const current_user = get_current_user();
   const [application_message, set_application_message] = useState('');
   const [feedback_message, set_feedback_message] = useState('');
 
-  const handle_submit = (event) => {
+  const handle_submit = async (event) => {
     event.preventDefault();
 
-    if (!current_user) {
-      set_feedback_message('Please sign in first before applying as a seller.');
+    if (!application_message.trim()) {
+      set_feedback_message('Please provide your application message.');
       return;
     }
 
-    const application_result = create_seller_application({
-      user_id: current_user.id,
-      email: current_user.email,
-      first_name: current_user.first_name,
-      last_name: current_user.last_name,
-      application_message
-    });
+    try {
+      await api_request('/applications/apply/', {
+        method: 'POST',
+        body: JSON.stringify({ application_message }),
+      });
 
-    if (!application_result.success) {
-      set_feedback_message(application_result.message);
-      return;
+      set_application_message('');
+      set_feedback_message('Application submitted. Waiting for admin approval.');
+    } catch (error) {
+      set_feedback_message(error.message);
     }
-
-    set_application_message('');
-    set_feedback_message('Application submitted. Waiting for admin approval.');
   };
 
   return (

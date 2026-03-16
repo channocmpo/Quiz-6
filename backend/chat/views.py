@@ -2,6 +2,7 @@ import json
 import os
 from urllib import error, parse, request
 
+from django.conf import settings
 from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -15,7 +16,7 @@ class AIChatbotView(APIView):
 		if not question:
 			return Response({"detail": "question is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-		api_key = os.getenv("GEMINI_API_KEY") or os.getenv("REACT_APP_GEMINI_API_KEY")
+		api_key = settings.GEMINI_API_KEY or os.getenv("REACT_APP_GEMINI_API_KEY")
 		if not api_key:
 			return Response(
 				{"detail": "Gemini API key is not configured on server."},

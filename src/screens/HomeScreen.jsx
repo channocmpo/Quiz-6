@@ -1,9 +1,9 @@
-import { useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Badge, Card, Col, Container, Row } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { signout } from '../actions/userActions';
-import { get_services } from '../utils/serviceStorage';
+import { api_request, build_media_url } from '../utils/apiClient';
 
 function HomeScreen() {
   const dispatch = useDispatch();
@@ -11,7 +11,20 @@ function HomeScreen() {
   const current_user = user_signin_state.userInfo;
   const is_admin = current_user && current_user.role === 'Admin';
   const is_seller = current_user && current_user.role === 'Seller';
-  const services_data = useMemo(() => get_services(), []);
+  const [services_data, set_services_data] = useState([]);
+
+  useEffect(() => {
+    const load_services = async () => {
+      try {
+        const service_list = await api_request('/services/list/', { method: 'GET' }, true);
+        set_services_data(service_list);
+      } catch (_error) {
+        set_services_data([]);
+      }
+    };
+
+    load_services();
+  }, []);
 
   const handle_sign_out = () => {
     dispatch(signout());
@@ -78,7 +91,7 @@ function HomeScreen() {
               <Card className="h-100 shadow-sm border-0 themed-card service-card">
                 <Card.Img
                   variant="top"
-                  src={service_item.sample_image}
+                  src={build_media_url(service_item.sample_image)}
                   alt={service_item.service_name}
                   style={{ height: '200px', objectFit: 'cover' }}
                 />

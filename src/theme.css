@@ -110,4 +110,31 @@ body {
 .floating-chat-window {
   background: rgba(14, 17, 23, 0.95) !important;
   color: #f3f5f8;
+  animation: chatbot-pop-in 0.22s ease-out;
+  transform-origin: bottom right;
+}
+
+.floating-chat-label {
+  color: #d2d9e3;
+}
+
+.floating-chat-helper {
+  color: #c1c9d4;
+}
+
+@keyframes chatbot-pop-in {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .floating-chat-window {
+    animation: none;
+  }
 }

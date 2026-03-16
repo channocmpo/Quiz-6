@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useSelector } from 'react-redux';
 import {
   Alert,
   Button,
@@ -12,18 +13,14 @@ import {
 } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import {
-  approve_seller_application,
-  decline_seller_application,
-  get_current_user,
-  get_seller_applications,
-  get_users,
-  save_users
-} from '../utils/userStorage';
+  api_request,
+} from '../utils/apiClient';
 
 function UserScreen() {
-  const current_user = get_current_user();
-  const [users, set_users] = useState(get_users());
-  const [applications, set_applications] = useState(get_seller_applications());
+  const user_signin_state = useSelector((state) => state.userSignin);
+  const current_user = user_signin_state.userInfo;
+  const [users, set_users] = useState([]);
+  const [applications, set_applications] = useState([]);
   const [edit_user_id, set_edit_user_id] = useState(null);
   const [edit_form, set_edit_form] = useState({
     first_name: '',
@@ -46,6 +43,28 @@ function UserScreen() {
     [current_user]
   );
 
+  useEffect(() => {
+    const load_admin_data = async () => {
+      try {
+        const users_list = await api_request('/users/admin/users/', { method: 'GET' });
+        set_users(users_list);
+      } catch (_error) {
+        set_users([]);
+      }
+
+      try {
+        const app_list = await api_request('/applications/list/', { method: 'GET' });
+        set_applications(app_list);
+      } catch (_error) {
+        set_applications([]);
+      }
+    };
+
+    if (is_admin) {
+      load_admin_data();
+    }
+  }, [is_admin]);
+
   const start_edit = (user_item) => {
     set_edit_user_id(user_item.id);
     set_edit_form({
@@ -60,7 +79,7 @@ function UserScreen() {
     set_edit_form({ first_name: '', last_name: '', email: '' });
   };
 
-  const save_edit = (user_id) => {
+  const save_edit = async (user_id) => {
     const updated_users = users.map((user_item) => {
       if (user_item.id !== user_id) {
         return user_item;
@@ -75,14 +94,12 @@ function UserScreen() {
     });
 
     set_users(updated_users);
-    save_users(updated_users);
     cancel_edit();
   };
 
   const delete_user = (user_id) => {
     const updated_users = users.filter((user_item) => user_item.id !== user_id);
     set_users(updated_users);
-    save_users(updated_users);
   };
 
   const open_approve_modal = (application_id) => {
@@ -117,33 +134,38 @@ function UserScreen() {
     });
   };
 
-  const handle_approve = () => {
+  const handle_approve = async () => {
     if (!approve_modal_state.merchant_id.trim()) {
       return;
     }
 
-    approve_seller_application(
-      approve_modal_state.application_id,
-      approve_modal_state.merchant_id.trim()
-    );
-
-    set_users(get_users());
-    set_applications(get_seller_applications());
-    close_approve_modal();
+    try {
+      await api_request(`/applications/${approve_modal_state.application_id}/approve/`, {
+        method: 'POST',
+        body: JSON.stringify({ merchant_id: approve_modal_state.merchant_id.trim() }),
+      });
+      const users_list = await api_request('/users/admin/users/', { method: 'GET' });
+      const app_list = await api_request('/applications/list/', { method: 'GET' });
+      set_users(users_list);
+      set_applications(app_list);
+      close_approve_modal();
+    } catch (_error) {}
   };
 
-  const handle_decline = () => {
+  const handle_decline = async () => {
     if (!decline_modal_state.decline_reason.trim()) {
       return;
     }
 
-    decline_seller_application(
-      decline_modal_state.application_id,
-      decline_modal_state.decline_reason.trim()
-    );
-
-    set_applications(get_seller_applications());
-    close_decline_modal();
+    try {
+      await api_request(`/applications/${decline_modal_state.application_id}/decline/`, {
+        method: 'POST',
+        body: JSON.stringify({ decline_reason: decline_modal_state.decline_reason.trim() }),
+      });
+      const app_list = await api_request('/applications/list/', { method: 'GET' });
+      set_applications(app_list);
+      close_decline_modal();
+    } catch (_error) {}
   };
 
   if (!is_admin) {
@@ -299,9 +321,9 @@ function UserScreen() {
 
                     return (
                       <tr key={application_item.id}>
-                        <td>{application_item.first_name}</td>
-                        <td>{application_item.last_name}</td>
-                        <td>{application_item.email}</td>
+                        <td>{application_item.first_name || '-'}</td>
+                        <td>{application_item.last_name || '-'}</td>
+                        <td>{application_item.user_email}</td>
                         <td>{application_item.status}</td>
                         <td>
                           {is_pending ? (

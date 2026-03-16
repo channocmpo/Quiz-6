@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Alert, Button, Card, Col, Container, Form, Row } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
-import { create_user } from '../utils/userStorage';
+import { api_request } from '../utils/apiClient';
 
 function SignUp() {
   const navigate = useNavigate();
@@ -26,7 +26,7 @@ function SignUp() {
     }));
   };
 
-  const handle_submit = (event) => {
+  const handle_submit = async (event) => {
     event.preventDefault();
 
     if (!form_data.email.includes('@')) {
@@ -51,23 +51,30 @@ function SignUp() {
 
     set_feedback_message('');
 
-    const register_result = create_user({
-      email: form_data.email,
-      username: form_data.username,
-      phone_number: form_data.phone_number,
-      first_name: form_data.first_name,
-      last_name: form_data.last_name,
-      location: form_data.location,
-      gender: form_data.gender,
-      password: form_data.password
-    });
+    try {
+      await api_request(
+        '/users/register/',
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            email: form_data.email,
+            username: form_data.username,
+            phone_number: form_data.phone_number,
+            first_name: form_data.first_name,
+            last_name: form_data.last_name,
+            location: form_data.location,
+            gender: form_data.gender,
+            password: form_data.password,
+            confirm_password: form_data.confirm_password,
+          }),
+        },
+        false
+      );
 
-    if (!register_result.success) {
-      set_feedback_message(register_result.message);
-      return;
+      navigate('/signin');
+    } catch (error) {
+      set_feedback_message(error.message);
     }
-
-    navigate('/signin');
   };
 
   return (

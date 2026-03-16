@@ -2,11 +2,11 @@ import { applyMiddleware, combineReducers, createStore } from 'redux';
 import { thunk } from 'redux-thunk';
 import { chatbot_reducer } from './reducers/chatbotReducers';
 import { user_signin_reducer } from './reducers/userReducers';
-import { get_current_user } from './utils/userStorage';
+import { get_user_info } from './utils/apiClient';
 
 const initial_state = {
   userSignin: {
-    userInfo: get_current_user()
+    userInfo: get_user_info()
   }
 };
 

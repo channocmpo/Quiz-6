@@ -1,14 +1,31 @@
-import { useMemo } from 'react';
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { Alert, Button, Card, Col, Container, Row, Table } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { get_current_user, get_orders_by_user } from '../utils/userStorage';
+import { api_request } from '../utils/apiClient';
 
 function UserProfile() {
-  const current_user = get_current_user();
-  const user_orders = useMemo(
-    () => (current_user ? get_orders_by_user(current_user.id) : []),
-    [current_user]
-  );
+  const user_signin_state = useSelector((state) => state.userSignin);
+  const current_user = user_signin_state.userInfo;
+  const [user_orders, set_user_orders] = useState([]);
+
+  useEffect(() => {
+    const load_orders = async () => {
+      if (!current_user) {
+        set_user_orders([]);
+        return;
+      }
+
+      try {
+        const orders = await api_request('/orders/history/', { method: 'GET' });
+        set_user_orders(orders);
+      } catch (_error) {
+        set_user_orders([]);
+      }
+    };
+
+    load_orders();
+  }, [current_user]);
 
   if (!current_user) {
     return (
@@ -78,8 +95,8 @@ function UserProfile() {
                     <tr key={order_item.id}>
                       <td>ORDER-{order_item.id}</td>
                       <td>{order_item.service_name}</td>
-                      <td>{order_item.price}</td>
-                      <td>{order_item.payment_status}</td>
+                      <td>${order_item.price_paid}</td>
+                      <td>{order_item.paypal_transaction_id}</td>
                     </tr>
                   ))}
                 </tbody>

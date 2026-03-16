@@ -1,20 +1,32 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { Alert, Badge, Button, Card, Col, Container, Row } from 'react-bootstrap';
 import { Link, useParams } from 'react-router-dom';
-import { get_service_by_id } from '../utils/serviceStorage';
-import { create_user_order, get_current_user, get_user_by_id } from '../utils/userStorage';
+import { api_request, build_media_url } from '../utils/apiClient';
 
 function DetailScreen() {
   const { id } = useParams();
-  const current_user = get_current_user();
+  const user_signin_state = useSelector((state) => state.userSignin);
+  const current_user = user_signin_state.userInfo;
   const [feedback_message, set_feedback_message] = useState('');
-  const selected_service = get_service_by_id(Number(id));
+  const [selected_service, set_selected_service] = useState(null);
 
-  const seller_user = selected_service
-    ? get_user_by_id(selected_service.seller_user_id)
-    : null;
+  useEffect(() => {
+    const load_service_detail = async () => {
+      try {
+        const service_detail = await api_request(`/services/${id}/`, { method: 'GET' }, true);
+        set_selected_service(service_detail);
+      } catch (_error) {
+        set_selected_service(null);
+      }
+    };
 
-  const handle_avail_service = () => {
+    load_service_detail();
+  }, [id]);
+
+  const seller_merchant_id = selected_service?.seller_merchant_id || '';
+
+  const handle_avail_service = async () => {
     if (!current_user) {
       set_feedback_message('Please sign in first to avail this service.');
       return;
@@ -25,7 +37,7 @@ function DetailScreen() {
       return;
     }
 
-    if (!seller_user || !seller_user.merchant_id) {
+    if (!seller_merchant_id) {
       set_feedback_message('Seller merchant account is not configured yet.');
       return;
     }
@@ -34,25 +46,30 @@ function DetailScreen() {
       String(selected_service.price).replace(/[^0-9.]/g, '')
     );
 
-    const created_order = create_user_order({
-      user_id: current_user.id,
-      service_id: selected_service.id,
-      service_name: selected_service.service_name,
-      price: selected_service.price,
-      seller_user_id: seller_user.id,
-      seller_name: `${seller_user.first_name} ${seller_user.last_name}`,
-      seller_merchant_id: seller_user.merchant_id,
-      payment_status: 'Redirected to PayPal'
-    });
+    const pending_transaction_id = `PENDING-${Date.now()}`;
+
+    try {
+      await api_request('/orders/create/', {
+        method: 'POST',
+        body: JSON.stringify({
+          service: selected_service.id,
+          paypal_transaction_id: pending_transaction_id,
+          price_paid: numeric_price,
+        }),
+      });
+    } catch (error) {
+      set_feedback_message(error.message);
+      return;
+    }
 
     const paypal_url = new URL('https://www.paypal.com/cgi-bin/webscr');
     paypal_url.searchParams.set('cmd', '_xclick');
-    paypal_url.searchParams.set('business', seller_user.merchant_id);
+    paypal_url.searchParams.set('business', seller_merchant_id);
     paypal_url.searchParams.set('item_name', selected_service.service_name);
     paypal_url.searchParams.set('amount', String(numeric_price));
     paypal_url.searchParams.set('currency_code', 'USD');
-    paypal_url.searchParams.set('invoice', `ORDER-${created_order.id}`);
-    paypal_url.searchParams.set('custom', `platform_order_${created_order.id}`);
+    paypal_url.searchParams.set('invoice', pending_transaction_id);
+    paypal_url.searchParams.set('custom', `platform_order_${pending_transaction_id}`);
 
     window.open(paypal_url.toString(), '_blank', 'noopener,noreferrer');
     set_feedback_message(
@@ -89,7 +106,7 @@ function DetailScreen() {
           <Card className="shadow-sm border-0 themed-card">
             <Card.Img
               variant="top"
-              src={selected_service.sample_image}
+              src={build_media_url(selected_service.sample_image)}
               alt={selected_service.service_name}
               style={{ height: '320px', objectFit: 'cover' }}
             />
@@ -122,8 +139,8 @@ function DetailScreen() {
 
               <p className="mb-4">
                 <strong>Seller Merchant ID:</strong>{' '}
-                {seller_user && seller_user.merchant_id
-                  ? seller_user.merchant_id
+                {seller_merchant_id
+                  ? seller_merchant_id
                   : 'Not set'}
               </p>
 

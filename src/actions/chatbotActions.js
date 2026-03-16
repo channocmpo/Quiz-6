@@ -3,6 +3,7 @@ import {
   CHATBOT_SEND_REQUEST,
   CHATBOT_SEND_SUCCESS
 } from '../constants/chatbotConstants';
+import { api_request } from '../utils/apiClient';
 
 const project_keywords = [
   'car wash',
@@ -23,6 +24,13 @@ const project_keywords = [
   'coating'
 ];
 
+const greeting_keywords = ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening'];
+
+function is_greeting(question_text) {
+  const normalized_question = question_text.toLowerCase().trim();
+  return greeting_keywords.some((keyword_item) => normalized_question === keyword_item);
+}
+
 function is_project_related(question_text) {
   const normalized_question = question_text.toLowerCase();
 
@@ -31,20 +39,17 @@ function is_project_related(question_text) {
   );
 }
 
-function extract_gemini_text(response_json) {
-  const candidates = response_json.candidates || [];
-  if (!candidates.length) {
-    return 'No response from chatbot. Please try again.';
-  }
-
-  const parts = candidates[0].content?.parts || [];
-  const text_part = parts.find((part_item) => part_item.text);
-
-  return text_part?.text || 'No response from chatbot. Please try again.';
-}
-
 export const send_chat_message = (question_text) => async (dispatch) => {
   dispatch({ type: CHATBOT_SEND_REQUEST, payload: question_text });
+
+  if (is_greeting(question_text)) {
+    dispatch({
+      type: CHATBOT_SEND_SUCCESS,
+      payload:
+        'Hello! I can help with this Car Wash & Detailing Services platform — ask me about services, sellers, orders, PayPal, or account actions.'
+    });
+    return;
+  }
 
   if (!is_project_related(question_text)) {
     dispatch({
@@ -55,50 +60,12 @@ export const send_chat_message = (question_text) => async (dispatch) => {
     return;
   }
 
-  const gemini_api_key = process.env.REACT_APP_GEMINI_API_KEY;
-
-  if (!gemini_api_key) {
-    dispatch({
-      type: CHATBOT_SEND_FAIL,
-      payload:
-        'Gemini API key is missing. Set REACT_APP_GEMINI_API_KEY in your environment.'
-    });
-    return;
-  }
-
   try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${gemini_api_key}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          systemInstruction: {
-            parts: [
-              {
-                text:
-                  'You are a support chatbot for a Car Wash & Detailing Services platform with three roles: Admin, Seller, and User. Only answer questions about this project domain: services, seller applications, orders, PayPal checkout, dashboard usage, and account actions. If question is out of scope, reply: I can only answer questions related to this Car Wash & Detailing Services platform.'
-              }
-            ]
-          },
-          contents: [
-            {
-              role: 'user',
-              parts: [{ text: question_text }]
-            }
-          ]
-        })
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error('Failed to connect to Gemini API.');
-    }
-
-    const response_json = await response.json();
-    const answer_text = extract_gemini_text(response_json);
+    const response_json = await api_request('/chat/ask/', {
+      method: 'POST',
+      body: JSON.stringify({ question: question_text }),
+    });
+    const answer_text = response_json.answer || 'No response from chatbot.';
 
     dispatch({ type: CHATBOT_SEND_SUCCESS, payload: answer_text });
   } catch (error) {

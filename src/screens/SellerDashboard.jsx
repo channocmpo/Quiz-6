@@ -1,28 +1,39 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { Alert, Button, Card, Col, Container, Form, Row, Table } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import {
-  create_service,
-  delete_service,
-  get_services,
-  update_service
-} from '../utils/serviceStorage';
-import { get_current_user } from '../utils/userStorage';
+import { api_request, build_media_url } from '../utils/apiClient';
 
 function SellerDashboard() {
-  const current_user = get_current_user();
+  const user_signin_state = useSelector((state) => state.userSignin);
+  const current_user = user_signin_state.userInfo;
   const is_seller =
     current_user && (current_user.role === 'Seller' || current_user.role === 'Admin');
 
-  const [services, set_services] = useState(get_services());
+  const [services, set_services] = useState([]);
   const [form_data, set_form_data] = useState({
     service_name: '',
     description: '',
     price: '',
     duration_of_service: '',
-    sample_image: ''
+    sample_image: null
   });
   const [edit_service_id, set_edit_service_id] = useState(null);
+
+  useEffect(() => {
+    const load_manage_services = async () => {
+      try {
+        const list_data = await api_request('/services/manage/', { method: 'GET' });
+        set_services(list_data);
+      } catch (_error) {
+        set_services([]);
+      }
+    };
+
+    if (is_seller) {
+      load_manage_services();
+    }
+  }, [is_seller]);
 
   const seller_services = useMemo(
     () =>
@@ -49,10 +60,10 @@ function SellerDashboard() {
   }
 
   const handle_change = (event) => {
-    const { name, value } = event.target;
+    const { name, value, files } = event.target;
     set_form_data((previous_data) => ({
       ...previous_data,
-      [name]: value
+      [name]: name === 'sample_image' ? files[0] : value
     }));
   };
 
@@ -62,32 +73,40 @@ function SellerDashboard() {
       description: '',
       price: '',
       duration_of_service: '',
-      sample_image: ''
+      sample_image: null
     });
     set_edit_service_id(null);
   };
 
-  const handle_submit = (event) => {
+  const handle_submit = async (event) => {
     event.preventDefault();
 
-    const service_payload = {
-      service_name: form_data.service_name,
-      description: form_data.description,
-      price: form_data.price,
-      duration_of_service: form_data.duration_of_service,
-      sample_image: form_data.sample_image,
-      name_of_the_expert: `${current_user.first_name} ${current_user.last_name}`,
-      seller_user_id: current_user.id
-    };
-
-    if (edit_service_id) {
-      update_service(edit_service_id, service_payload);
-    } else {
-      create_service(service_payload);
+    const service_payload = new FormData();
+    service_payload.append('service_name', form_data.service_name);
+    service_payload.append('description', form_data.description);
+    service_payload.append('price', form_data.price);
+    service_payload.append('duration_of_service', form_data.duration_of_service);
+    if (form_data.sample_image) {
+      service_payload.append('sample_image', form_data.sample_image);
     }
 
-    set_services(get_services());
-    reset_form();
+    try {
+      if (edit_service_id) {
+        await api_request(`/services/manage/${edit_service_id}/`, {
+          method: 'PATCH',
+          body: service_payload,
+        });
+      } else {
+        await api_request('/services/manage/', {
+          method: 'POST',
+          body: service_payload,
+        });
+      }
+
+      const list_data = await api_request('/services/manage/', { method: 'GET' });
+      set_services(list_data);
+      reset_form();
+    } catch (_error) {}
   };
 
   const start_edit = (service_item) => {
@@ -97,13 +116,16 @@ function SellerDashboard() {
       description: service_item.description,
       price: service_item.price,
       duration_of_service: service_item.duration_of_service,
-      sample_image: service_item.sample_image
+      sample_image: null
     });
   };
 
-  const handle_delete = (service_id) => {
-    delete_service(service_id);
-    set_services(get_services());
+  const handle_delete = async (service_id) => {
+    try {
+      await api_request(`/services/manage/${service_id}/`, { method: 'DELETE' });
+      const list_data = await api_request('/services/manage/', { method: 'GET' });
+      set_services(list_data);
+    } catch (_error) {}
   };
 
   return (
@@ -166,12 +188,13 @@ function SellerDashboard() {
                 </Row>
 
                 <Form.Group className="mb-4" controlId="sample_image">
-                  <Form.Label>Image URL</Form.Label>
+                  <Form.Label>Image File</Form.Label>
                   <Form.Control
+                    type="file"
+                    accept="image/*"
                     name="sample_image"
-                    value={form_data.sample_image}
                     onChange={handle_change}
-                    required
+                    required={!edit_service_id}
                   />
                 </Form.Group>
 
@@ -230,6 +253,11 @@ function SellerDashboard() {
                             Delete
                           </Button>
                         </div>
+                        <img
+                          src={build_media_url(service_item.sample_image)}
+                          alt={service_item.service_name}
+                          style={{ width: '64px', height: '44px', objectFit: 'cover', marginTop: '6px', borderRadius: '6px' }}
+                        />
                       </td>
                     </tr>
                   ))}

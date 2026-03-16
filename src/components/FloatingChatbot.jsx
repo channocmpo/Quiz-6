@@ -54,14 +54,14 @@ function FloatingChatbot() {
               style={{ maxHeight: '260px', overflowY: 'auto', borderColor: 'rgba(255,255,255,0.18)' }}
             >
               {messages.length === 0 && (
-                <p className="text-muted small mb-0">
+                <p className="floating-chat-helper small mb-0">
                   Ask about services, seller applications, orders, and PayPal flow.
                 </p>
               )}
 
               {messages.map((message_item, index) => (
                 <div key={`${message_item.role}-${index}`} className="mb-2">
-                  <div className="small text-muted mb-1">
+                  <div className="small floating-chat-label mb-1">
                     {message_item.role === 'user' ? 'You' : 'AI Bot'}
                   </div>
                   <div

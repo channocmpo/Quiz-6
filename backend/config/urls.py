@@ -19,8 +19,30 @@ from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import include, path
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def api_home(_request):
+    return Response(
+        {
+            "message": "Car Wash & Detailing Services Backend API",
+            "routes": {
+                "users": "/api/v1/users/",
+                "applications": "/api/v1/applications/",
+                "services": "/api/v1/services/",
+                "orders": "/api/v1/orders/",
+                "chat": "/api/v1/chat/",
+                "admin": "/admin/",
+            },
+        }
+    )
 
 urlpatterns = [
+    path("", api_home, name="api-home"),
     path("admin/", admin.site.urls),
     path("api/v1/users/", include("users.urls")),
     path("api/v1/applications/", include("applications.urls")),
