@@ -62,7 +62,7 @@ function DetailScreen() {
 
   if (!selected_service) {
     return (
-      <Container className="py-5">
+      <Container className="py-5 theme-page">
         <h1 className="h4 mb-3">Service Not Found</h1>
         <p className="text-muted mb-4">
           The selected service does not exist in the current list.
@@ -75,7 +75,7 @@ function DetailScreen() {
   }
 
   return (
-    <Container className="py-5">
+    <Container className="py-5 theme-page">
       <Row className="mb-4">
         <Col>
           <Button as={Link} to="/" variant="outline-primary" size="sm">
@@ -86,7 +86,7 @@ function DetailScreen() {
 
       <Row>
         <Col lg={8} className="mx-auto">
-          <Card className="shadow-sm border-0">
+          <Card className="shadow-sm border-0 themed-card">
             <Card.Img
               variant="top"
               src={selected_service.sample_image}

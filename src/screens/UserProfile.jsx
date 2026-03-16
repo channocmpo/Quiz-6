@@ -12,7 +12,7 @@ function UserProfile() {
 
   if (!current_user) {
     return (
-      <Container className="py-5">
+      <Container className="py-5 theme-page">
         <Alert variant="warning" className="mb-3">
           Please sign in first to access your profile.
         </Alert>
@@ -24,10 +24,10 @@ function UserProfile() {
   }
 
   return (
-    <Container className="py-5">
+    <Container className="py-5 theme-page">
       <Row className="g-4">
         <Col lg={4}>
-          <Card className="shadow-sm border-0">
+          <Card className="shadow-sm border-0 themed-card">
             <Card.Body className="p-4">
               <h1 className="h4 mb-3">User Profile</h1>
               <p className="mb-1">
@@ -54,7 +54,7 @@ function UserProfile() {
         </Col>
 
         <Col lg={8}>
-          <Card className="shadow-sm border-0">
+          <Card className="shadow-sm border-0 themed-card">
             <Card.Body className="p-4">
               <h2 className="h5 mb-3">My Orders</h2>
               <Table responsive hover>

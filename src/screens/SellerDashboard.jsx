@@ -37,7 +37,7 @@ function SellerDashboard() {
 
   if (!is_seller) {
     return (
-      <Container className="py-5">
+      <Container className="py-5 theme-page">
         <Alert variant="danger" className="mb-3">
           This page is accessible by approved Sellers only.
         </Alert>
@@ -107,10 +107,10 @@ function SellerDashboard() {
   };
 
   return (
-    <Container className="py-5">
+    <Container className="py-5 theme-page">
       <Row className="g-4">
         <Col lg={5}>
-          <Card className="shadow-sm border-0">
+          <Card className="shadow-sm border-0 themed-card">
             <Card.Body className="p-4">
               <h1 className="h4 mb-3">Seller Dashboard</h1>
               <p className="text-muted mb-4">Add or update your service listings.</p>
@@ -194,7 +194,7 @@ function SellerDashboard() {
         </Col>
 
         <Col lg={7}>
-          <Card className="shadow-sm border-0">
+          <Card className="shadow-sm border-0 themed-card">
             <Card.Body className="p-4">
               <h2 className="h5 mb-3">Manage Existing Services</h2>
 

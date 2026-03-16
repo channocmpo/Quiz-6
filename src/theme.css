@@ -1,0 +1,113 @@
+body {
+  background: radial-gradient(circle at top right, #2a0f14 0%, #111318 45%, #0b0d11 100%);
+  color: #f5f7fa;
+  min-height: 100vh;
+}
+
+.theme-page {
+  color: #f5f7fa;
+}
+
+.theme-page .text-muted {
+  color: #b9c1cc !important;
+}
+
+.app-navbar {
+  background: rgba(10, 11, 15, 0.9) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(6px);
+}
+
+.app-navbar .navbar-brand,
+.app-navbar .nav-link,
+.app-navbar .navbar-text {
+  color: #f8f9fa !important;
+}
+
+.app-navbar .nav-link:hover {
+  color: #ff4a5f !important;
+}
+
+.theme-hero {
+  background: linear-gradient(130deg, rgba(255, 58, 82, 0.14), rgba(255, 255, 255, 0.04));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+}
+
+.themed-card {
+  background: rgba(15, 18, 24, 0.82) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #f5f7fa;
+}
+
+.themed-card .card-title,
+.themed-card .card-text,
+.themed-card p,
+.themed-card h1,
+.themed-card h2,
+.themed-card h3,
+.themed-card h4,
+.themed-card h5 {
+  color: #f5f7fa;
+}
+
+.themed-card .text-muted {
+  color: #b9c1cc !important;
+}
+
+.service-card {
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.service-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.35) !important;
+}
+
+.theme-page .btn-primary {
+  background-color: #ff334f;
+  border-color: #ff334f;
+}
+
+.theme-page .btn-primary:hover {
+  background-color: #f12442;
+  border-color: #f12442;
+}
+
+.theme-page .btn-outline-primary {
+  color: #ff5a71;
+  border-color: #ff5a71;
+}
+
+.theme-page .btn-outline-primary:hover {
+  color: #fff;
+  background-color: #ff5a71;
+  border-color: #ff5a71;
+}
+
+.theme-page .form-control,
+.theme-page .form-select,
+.theme-page textarea {
+  background-color: rgba(255, 255, 255, 0.96);
+}
+
+.theme-page .table {
+  color: #e8edf3;
+}
+
+.theme-page .table > :not(caption) > * > * {
+  background-color: rgba(17, 20, 28, 0.65);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.floating-chat-trigger {
+  border-radius: 999px;
+  background: #ff3a52 !important;
+  border: 0 !important;
+  box-shadow: 0 8px 18px rgba(255, 58, 82, 0.35);
+}
+
+.floating-chat-window {
+  background: rgba(14, 17, 23, 0.95) !important;
+  color: #f3f5f8;
+}

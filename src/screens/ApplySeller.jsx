@@ -34,10 +34,10 @@ function ApplySeller() {
   };
 
   return (
-    <Container className="py-5">
+    <Container className="py-5 theme-page">
       <Row className="justify-content-center">
         <Col lg={7}>
-          <Card className="shadow-sm border-0">
+          <Card className="shadow-sm border-0 themed-card">
             <Card.Body className="p-4">
               <h1 className="h4 mb-3">Apply as Seller</h1>
               <p className="text-muted mb-4">

@@ -1,71 +1,69 @@
 import { useMemo } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Badge, Card, Col, Container, Row } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
+import { signout } from '../actions/userActions';
 import { get_services } from '../utils/serviceStorage';
-import { clear_current_user, get_current_user } from '../utils/userStorage';
 
 function HomeScreen() {
-  const current_user = get_current_user();
+  const dispatch = useDispatch();
+  const user_signin_state = useSelector((state) => state.userSignin);
+  const current_user = user_signin_state.userInfo;
   const is_admin = current_user && current_user.role === 'Admin';
   const is_seller = current_user && current_user.role === 'Seller';
   const services_data = useMemo(() => get_services(), []);
 
   const handle_sign_out = () => {
-    clear_current_user();
-    window.location.reload();
+    dispatch(signout());
   };
 
   return (
-    <Container className="py-5">
+    <Container className="py-5 theme-page">
       <Row className="mb-4">
-        <Col md={8}>
-          <h1 className="h3 mb-1">Car Wash & Detailing Services</h1>
-          <p className="text-muted mb-0">
-            Browse professional packages from trusted auto detailing specialists.
-          </p>
-        </Col>
-        <Col
-          md={4}
-          className="d-flex align-items-start justify-content-md-end mt-3 mt-md-0"
-        >
-          <div className="d-flex gap-2">
-            {!current_user && (
-              <>
-                <Link to="/signin" className="btn btn-primary btn-sm">
-                  Sign In
-                </Link>
-                <Link to="/signup" className="btn btn-outline-primary btn-sm">
-                  Sign Up
-                </Link>
-              </>
-            )}
-            {current_user && (
-              <>
-                <Link to="/profile" className="btn btn-primary btn-sm">
-                  Profile
-                </Link>
-                <button
-                  type="button"
-                  className="btn btn-outline-primary btn-sm"
-                  onClick={handle_sign_out}
-                >
-                  Sign Out
-                </button>
-              </>
-            )}
-            <Link to="/apply-seller" className="btn btn-outline-secondary btn-sm">
-              Apply Seller
-            </Link>
-            {is_seller && (
-              <Link to="/seller-dashboard" className="btn btn-success btn-sm">
-                Seller Dashboard
-              </Link>
-            )}
-            {is_admin && (
-              <Link to="/users" className="btn btn-dark btn-sm">
-                Users
-              </Link>
-            )}
+        <Col>
+          <div className="theme-hero p-4 p-md-5">
+            <Row className="align-items-center g-4">
+              <Col lg={7}>
+                <p className="text-uppercase small fw-semibold mb-2">Car Wash Platform</p>
+                <h1 className="display-5 fw-bold mb-3">Premium Car Wash & Detailing</h1>
+                <p className="text-muted mb-4">
+                  Book trusted detailing services, compare seller offers, and manage every order from one dashboard.
+                </p>
+                <div className="d-flex flex-wrap gap-2">
+                  <Link to="/profile" className="btn btn-primary">
+                    View Profile
+                  </Link>
+                  <Link to="/apply-seller" className="btn btn-outline-primary">
+                    Become a Seller
+                  </Link>
+                  {is_seller && (
+                    <Link to="/seller-dashboard" className="btn btn-success">
+                      Seller Dashboard
+                    </Link>
+                  )}
+                  {is_admin && (
+                    <Link to="/users" className="btn btn-dark">
+                      Admin Users
+                    </Link>
+                  )}
+                  <button
+                    type="button"
+                    className="btn btn-outline-light"
+                    onClick={handle_sign_out}
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              </Col>
+              <Col lg={5}>
+                <img
+                  src="/car%20was.jpg"
+                  alt="Car wash service"
+                  className="img-fluid rounded-4"
+                  style={{ border: '1px solid rgba(255,255,255,0.12)' }}
+                />
+              </Col>
+            </Row>
           </div>
         </Col>
       </Row>
@@ -77,7 +75,7 @@ function HomeScreen() {
               to={`/services/${service_item.id}`}
               className="text-decoration-none"
             >
-              <Card className="h-100 shadow-sm border-0">
+              <Card className="h-100 shadow-sm border-0 themed-card service-card">
                 <Card.Img
                   variant="top"
                   src={service_item.sample_image}
@@ -85,9 +83,7 @@ function HomeScreen() {
                   style={{ height: '200px', objectFit: 'cover' }}
                 />
                 <Card.Body className="d-flex flex-column">
-                  <Card.Title className="fs-5 text-dark">
-                    {service_item.service_name}
-                  </Card.Title>
+                  <Card.Title className="fs-5">{service_item.service_name}</Card.Title>
                   <Card.Text className="text-muted flex-grow-1">
                     {service_item.description}
                   </Card.Text>
