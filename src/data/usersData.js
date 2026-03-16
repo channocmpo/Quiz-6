@@ -21,6 +21,7 @@ const users_data = [
     location: 'Cebu',
     gender: 'female',
     password: 'seller123',
+    merchant_id: 'SELLER_MERCHANT_1002',
     role: 'Seller'
   },
   {

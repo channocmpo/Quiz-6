@@ -8,6 +8,7 @@ const services_data = [
     price: '$25',
     duration_of_service: '45 minutes',
     name_of_the_expert: 'Carlo Mendoza',
+    seller_user_id: 2,
     sample_image:
       'https://images.unsplash.com/photo-1607860108855-64acf2078ed9?auto=format&fit=crop&w=800&q=80'
   },
@@ -20,6 +21,7 @@ const services_data = [
     price: '$55',
     duration_of_service: '90 minutes',
     name_of_the_expert: 'Jasmine Lee',
+    seller_user_id: 2,
     sample_image:
       'https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?auto=format&fit=crop&w=800&q=80'
   },
@@ -32,6 +34,7 @@ const services_data = [
     price: '$120',
     duration_of_service: '180 minutes',
     name_of_the_expert: 'Miguel Santos',
+    seller_user_id: 2,
     sample_image:
       'https://images.unsplash.com/photo-1487754180451-c456f719a1fc?auto=format&fit=crop&w=800&q=80'
   },
@@ -44,6 +47,7 @@ const services_data = [
     price: '$220',
     duration_of_service: '240 minutes',
     name_of_the_expert: 'Rafael Cruz',
+    seller_user_id: 2,
     sample_image:
       'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=800&q=80'
   }

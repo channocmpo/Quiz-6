@@ -16,13 +16,18 @@ function ApplySeller() {
       return;
     }
 
-    create_seller_application({
+    const application_result = create_seller_application({
       user_id: current_user.id,
       email: current_user.email,
       first_name: current_user.first_name,
       last_name: current_user.last_name,
       application_message
     });
+
+    if (!application_result.success) {
+      set_feedback_message(application_result.message);
+      return;
+    }
 
     set_application_message('');
     set_feedback_message('Application submitted. Waiting for admin approval.');

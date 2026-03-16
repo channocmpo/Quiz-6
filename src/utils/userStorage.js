@@ -3,6 +3,7 @@ import users_data from '../data/usersData';
 const USERS_STORAGE_KEY = 'platform_users';
 const CURRENT_USER_STORAGE_KEY = 'platform_current_user';
 const SELLER_APPLICATION_STORAGE_KEY = 'platform_seller_applications';
+const USER_ORDERS_STORAGE_KEY = 'platform_user_orders';
 
 function read_json(key, fallback_value) {
   const stored_value = localStorage.getItem(key);
@@ -31,6 +32,11 @@ export function get_users() {
 
 export function save_users(users) {
   localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
+}
+
+export function get_user_by_id(user_id) {
+  const users = get_users();
+  return users.find((user_item) => user_item.id === user_id) || null;
 }
 
 export function create_user(new_user_payload) {
@@ -81,8 +87,25 @@ export function set_current_user(user) {
   localStorage.setItem(CURRENT_USER_STORAGE_KEY, JSON.stringify(user));
 }
 
+export function clear_current_user() {
+  localStorage.removeItem(CURRENT_USER_STORAGE_KEY);
+}
+
 export function create_seller_application(application_payload) {
   const applications = read_json(SELLER_APPLICATION_STORAGE_KEY, []);
+
+  const has_active_application = applications.some(
+    (application_item) =>
+      application_item.user_id === application_payload.user_id &&
+      application_item.status === 'Pending'
+  );
+
+  if (has_active_application) {
+    return {
+      success: false,
+      message: 'You already have a pending seller application.'
+    };
+  }
 
   const created_application = {
     id: Date.now(),
@@ -96,5 +119,105 @@ export function create_seller_application(application_payload) {
     JSON.stringify([...applications, created_application])
   );
 
-  return created_application;
+  return { success: true, application: created_application };
+}
+
+export function get_seller_applications() {
+  return read_json(SELLER_APPLICATION_STORAGE_KEY, []);
+}
+
+export function save_seller_applications(applications) {
+  localStorage.setItem(
+    SELLER_APPLICATION_STORAGE_KEY,
+    JSON.stringify(applications)
+  );
+}
+
+export function approve_seller_application(application_id, merchant_id) {
+  const users = get_users();
+  const applications = get_seller_applications();
+
+  const updated_applications = applications.map((application_item) => {
+    if (application_item.id !== application_id) {
+      return application_item;
+    }
+
+    return {
+      ...application_item,
+      status: 'Approved',
+      merchant_id,
+      reviewed_at: new Date().toISOString()
+    };
+  });
+
+  const target_application = updated_applications.find(
+    (application_item) => application_item.id === application_id
+  );
+
+  const updated_users = users.map((user_item) => {
+    if (user_item.id !== target_application.user_id) {
+      return user_item;
+    }
+
+    return {
+      ...user_item,
+      role: 'Seller',
+      merchant_id
+    };
+  });
+
+  save_seller_applications(updated_applications);
+  save_users(updated_users);
+
+  const current_user = get_current_user();
+  if (current_user && current_user.id === target_application.user_id) {
+    const refreshed_user = updated_users.find(
+      (user_item) => user_item.id === current_user.id
+    );
+    set_current_user(refreshed_user);
+  }
+}
+
+export function decline_seller_application(application_id, decline_reason) {
+  const applications = get_seller_applications();
+
+  const updated_applications = applications.map((application_item) => {
+    if (application_item.id !== application_id) {
+      return application_item;
+    }
+
+    return {
+      ...application_item,
+      status: 'Declined',
+      decline_reason,
+      reviewed_at: new Date().toISOString()
+    };
+  });
+
+  save_seller_applications(updated_applications);
+}
+
+export function create_user_order(order_payload) {
+  const orders = read_json(USER_ORDERS_STORAGE_KEY, []);
+  const created_order = {
+    id: Date.now(),
+    ordered_at: new Date().toISOString(),
+    ...order_payload
+  };
+
+  localStorage.setItem(
+    USER_ORDERS_STORAGE_KEY,
+    JSON.stringify([...orders, created_order])
+  );
+
+  return created_order;
+}
+
+export function get_all_orders() {
+  return read_json(USER_ORDERS_STORAGE_KEY, []);
+}
+
+export function get_orders_by_user(user_id) {
+  const orders = get_all_orders();
+  return orders.filter((order_item) => order_item.user_id === user_id);
 }

@@ -1,11 +1,19 @@
+import { useMemo } from 'react';
 import { Badge, Card, Col, Container, Row } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import services_data from '../data/servicesData';
-import { get_current_user } from '../utils/userStorage';
+import { get_services } from '../utils/serviceStorage';
+import { clear_current_user, get_current_user } from '../utils/userStorage';
 
 function HomeScreen() {
   const current_user = get_current_user();
   const is_admin = current_user && current_user.role === 'Admin';
+  const is_seller = current_user && current_user.role === 'Seller';
+  const services_data = useMemo(() => get_services(), []);
+
+  const handle_sign_out = () => {
+    clear_current_user();
+    window.location.reload();
+  };
 
   return (
     <Container className="py-5">
@@ -21,15 +29,38 @@ function HomeScreen() {
           className="d-flex align-items-start justify-content-md-end mt-3 mt-md-0"
         >
           <div className="d-flex gap-2">
-            <Link to="/signin" className="btn btn-primary btn-sm">
-              Sign In
-            </Link>
-            <Link to="/signup" className="btn btn-outline-primary btn-sm">
-              Sign Up
-            </Link>
+            {!current_user && (
+              <>
+                <Link to="/signin" className="btn btn-primary btn-sm">
+                  Sign In
+                </Link>
+                <Link to="/signup" className="btn btn-outline-primary btn-sm">
+                  Sign Up
+                </Link>
+              </>
+            )}
+            {current_user && (
+              <>
+                <Link to="/profile" className="btn btn-primary btn-sm">
+                  Profile
+                </Link>
+                <button
+                  type="button"
+                  className="btn btn-outline-primary btn-sm"
+                  onClick={handle_sign_out}
+                >
+                  Sign Out
+                </button>
+              </>
+            )}
             <Link to="/apply-seller" className="btn btn-outline-secondary btn-sm">
               Apply Seller
             </Link>
+            {is_seller && (
+              <Link to="/seller-dashboard" className="btn btn-success btn-sm">
+                Seller Dashboard
+              </Link>
+            )}
             {is_admin && (
               <Link to="/users" className="btn btn-dark btn-sm">
                 Users
